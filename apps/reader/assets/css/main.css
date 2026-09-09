@@ -4,13 +4,16 @@
   min-height: 100vh;
   background: var(--color-bg);
   padding-bottom: 88px; /* bottom nav 공간 */
+  /* 본문(.reader-page)과 상단 헤더(.top-header__inner)가 공유하는 컨테이너 폭/패딩 */
+  --reader-max: 640px;
+  --reader-pad: 16px;
 }
 
 .reader-page {
   width: 100%;
-  max-width: 640px;
+  max-width: var(--reader-max);
   margin: 0 auto;
-  padding: 16px 16px 24px;
+  padding: 16px var(--reader-pad) 24px;
 }
 
 .page-title {
@@ -55,6 +58,6 @@
 .muted { color: var(--color-muted); }
 
 @media (min-width: 1100px) {
-  .reader-app { padding-bottom: 24px; }
-  .reader-page { max-width: 1000px; padding: 24px; }
+  .reader-app { padding-bottom: 24px; --reader-max: 1000px; --reader-pad: 24px; }
+  .reader-page { padding: 24px var(--reader-pad); }
 }

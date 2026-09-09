@@ -44,10 +44,11 @@ const route = useRoute();
   z-index: 30;
 }
 .top-header__inner {
-  max-width: var(--content-max);
+  /* 본문(.reader-page)과 동일한 컨테이너 폭/패딩을 공유해 좌우 정렬선을 맞춘다 */
+  max-width: var(--reader-max);
   margin: 0 auto;
   height: 60px;
-  padding: 0 16px;
+  padding: 0 var(--reader-pad);
   display: flex;
   align-items: center;
   gap: 16px;
