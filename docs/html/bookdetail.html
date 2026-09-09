@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Book Detail — 독서 중심 도서관 플랫폼</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root{
+      --ink:#10213f;
+      --muted:#68798d;
+      --line:#dfe7f0;
+      --blue:#1769e8;
+      --green:#15985b;
+      --red:#dc3d48;
+      --soft-blue:#eef6ff;
+      --soft-green:#eaf9f1;
+      --soft-purple:#f2efff;
+      --soft-amber:#fff7e3;
+      --shadow-phone:0 18px 50px rgba(15,35,65,.18),0 3px 10px rgba(15,35,65,.1);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 20% 0%,#fff 0 16%,transparent 42%),
+        linear-gradient(180deg,#eef5ff 0%,#f8fbff 50%,#edf5ff 100%);
+    }
+    .demo-stage{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:30px 16px;
+    }
+    .phone{
+      width:min(390px,100%);
+      height:min(844px,calc(100vh - 36px));
+      min-height:680px;
+      position:relative;
+      overflow:hidden;
+      background:#fff;
+      border:7px solid #243445;
+      border-radius:34px;
+      box-shadow:var(--shadow-phone);
+    }
+    .phone::before{
+      content:"";
+      position:absolute;
+      top:7px;left:50%;
+      transform:translateX(-50%);
+      width:78px;height:6px;
+      border-radius:99px;
+      background:#1d2b3a;
+      z-index:40;
+    }
+    .screen{
+      height:100%;
+      overflow:auto;
+      scrollbar-width:none;
+      background:#fff;
+      padding-bottom:74px;
+    }
+    .screen::-webkit-scrollbar{display:none}
+    .statusbar{
+      height:34px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:0 16px 5px;
+      font-size:12px;
+      font-weight:700;
+      color:#101828;
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(10px);
+    }
+    .status-icons{display:flex;align-items:center;gap:5px}
+    .tiny-svg{width:14px;height:14px}
+    .topbar{
+      height:50px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 10px;
+      background:#fff;
+      border-bottom:1px solid #eef2f7;
+      position:sticky;
+      top:34px;
+      z-index:25;
+    }
+    .topbar-title{
+      font-size:15px;
+      font-weight:800;
+    }
+    .top-actions{display:flex;align-items:center;gap:2px}
+    .icon-btn{
+      width:38px;height:38px;
+      border:0;background:transparent;
+      border-radius:12px;
+      display:grid;place-items:center;
+      color:#213754;
+    }
+    .icon-btn:hover{background:#f3f7fb}
+    .icon{
+      width:21px;height:21px;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:1.9;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+    .content{padding:14px}
+    .hero{
+      display:grid;
+      grid-template-columns:104px 1fr;
+      gap:15px;
+      align-items:start;
+      margin-bottom:16px;
+    }
+    .cover{
+      width:104px;
+      aspect-ratio:2/3;
+      border:1px solid #d7dfe7;
+      border-radius:8px;
+      background:linear-gradient(#fff 0 67%,#f3f5f7 67%);
+      box-shadow:0 4px 11px rgba(18,38,63,.13);
+      position:relative;
+      overflow:hidden;
+      font-family:serif;
+      color:#4b5563;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding-top:12px;
+    }
+    .cover-title{font-size:14px;letter-spacing:-.05em}
+    .cover-sub{font-size:7px;color:#999;margin-top:5px}
+    .planet{
+      position:absolute;bottom:13px;left:16px;width:68px;height:36px;
+      border-radius:50%;background:#8d9293;transform:rotate(-10deg);
+    }
+    .planet:before,.planet:after{
+      content:"";position:absolute;border-radius:50%;background:#777
+    }
+    .planet:before{width:6px;height:6px;left:14px;top:11px}
+    .planet:after{width:4px;height:4px;left:39px;top:20px}
+    .little{
+      position:absolute;left:58px;bottom:39px;width:7px;height:28px;
+      background:#efc83d;border-radius:5px 5px 2px 2px;transform:rotate(8deg)
+    }
+    .little:before{
+      content:"";position:absolute;left:0;top:-7px;width:7px;height:7px;
+      border-radius:50%;background:#dfb343
+    }
+    .star{position:absolute;width:7px;height:7px;border-radius:50%;background:#f4c53c;border:1px solid #bd9928}
+    .s1{left:14px;bottom:54px}.s2{right:14px;bottom:63px}
+    .meta-title{
+      margin:0 0 4px;
+      font-size:20px;
+      line-height:1.25;
+      font-weight:850;
+      letter-spacing:-.04em;
+    }
+    .meta-author{
+      font-size:12px;
+      color:#5e6f84;
+      margin-bottom:6px;
+    }
+    .meta-pub{
+      font-size:11px;
+      color:#7a899b;
+      margin-bottom:8px;
+    }
+    .tags{
+      display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      height:24px;
+      padding:0 8px;
+      border-radius:8px;
+      font-size:10px;
+      font-weight:800;
+      background:#f1f5f9;
+      color:#526174;
+    }
+    .rating{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      font-size:11px;
+      color:#67788d;
+    }
+    .rating strong{color:#253b58}
+    .stars{color:#f4aa19;font-size:12px}
+    .primary-actions{
+      display:grid;
+      grid-template-columns:1.1fr 1fr 40px;
+      gap:7px;
+      margin-bottom:14px;
+    }
+    .btn-main,.btn-sub,.btn-more{
+      height:42px;border-radius:9px;font-size:12px;font-weight:800;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .btn-main{
+      border:1px solid var(--blue);
+      background:var(--blue);
+      color:#fff;
+    }
+    .btn-sub{
+      border:1px solid #cbd8e6;
+      background:#fff;
+      color:#23466d;
+    }
+    .btn-more{
+      border:1px solid #d5dfeb;
+      background:#fff;
+      color:#415872;
+      font-size:18px;
+    }
+    .tabs{
+      display:flex;
+      gap:18px;
+      overflow:auto;
+      border-bottom:1px solid #e7edf3;
+      margin:0 -14px 14px;
+      padding:0 14px;
+      scrollbar-width:none;
+    }
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{
+      flex:0 0 auto;
+      border:0;
+      background:none;
+      padding:10px 1px 9px;
+      color:#718195;
+      font-size:11px;
+      font-weight:800;
+      position:relative;
+    }
+    .tab.active{color:var(--blue)}
+    .tab.active::after{
+      content:"";
+      position:absolute;
+      left:0;right:0;bottom:-1px;
+      height:2px;background:var(--blue);border-radius:99px;
+    }
+    .panel{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      padding:12px;
+      margin-bottom:10px;
+      box-shadow:0 2px 8px rgba(21,50,82,.035);
+    }
+    .section-head{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:10px;margin-bottom:9px;
+    }
+    .section-title{
+      margin:0;
+      font-size:14px;
+      font-weight:850;
+      letter-spacing:-.03em;
+    }
+    .more-link{
+      border:0;background:none;color:var(--blue);font-size:10px;font-weight:800;padding:2px 0
+    }
+    .desc{
+      font-size:11px;
+      line-height:1.7;
+      color:#526479;
+      margin:0;
+    }
+    .quote{
+      margin-top:10px;
+      padding:10px 11px;
+      border-radius:10px;
+      background:#f7f9fc;
+      color:#50647c;
+      font-size:10px;
+      line-height:1.6;
+    }
+    .status-card{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:11px;
+      border-radius:11px;
+      background:var(--soft-green);
+      border:1px solid #d9f2e4;
+    }
+    .status-left{
+      display:flex;align-items:center;gap:10px;min-width:0
+    }
+    .status-icon{
+      width:34px;height:34px;border-radius:9px;
+      background:#fff;display:grid;place-items:center;color:var(--green);
+      box-shadow:0 1px 4px rgba(25,152,91,.08)
+    }
+    .status-title{font-size:12px;font-weight:850}
+    .status-meta{font-size:10px;color:#678071;margin-top:2px}
+    .status-change{
+      border:1px solid #c8e8d5;background:#fff;color:#317358;
+      border-radius:8px;height:32px;padding:0 9px;font-size:10px;font-weight:800;
+    }
+    .progress-row{display:flex;align-items:center;gap:8px;margin-top:9px}
+    .progress{
+      height:5px;border-radius:99px;background:#dbe8df;overflow:hidden;flex:1
+    }
+    .progress span{display:block;width:60%;height:100%;background:linear-gradient(90deg,#1ba967,#48c181);border-radius:99px}
+    .progress-pct{font-size:10px;color:#3d7158;font-weight:800}
+    .my-state-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .mini-state{
+      border:1px solid #e0e8f1;
+      border-radius:11px;
+      padding:10px;
+      min-height:75px;
+      background:#fbfdff;
+    }
+    .mini-state .label{font-size:9px;color:#7a8899;margin-bottom:5px}
+    .mini-state strong{display:block;font-size:11px;margin-bottom:2px}
+    .mini-state small{font-size:9px;color:#718095;line-height:1.4}
+    .mini-state.loan{background:#f7fbff}
+    .due{color:var(--red)!important;font-weight:800}
+    .library-row{
+      display:grid;
+      grid-template-columns:30px 1fr auto;
+      align-items:center;
+      gap:9px;
+      padding:9px 0;
+      border-bottom:1px solid #edf1f5;
+    }
+    .library-row:last-child{border-bottom:0;padding-bottom:0}
+    .lib-icon{
+      width:30px;height:30px;border-radius:8px;
+      background:#f2f6fb;color:#44627f;
+      display:grid;place-items:center;
+    }
+    .lib-name{font-size:11px;font-weight:850;margin-bottom:2px}
+    .lib-meta{font-size:9px;color:#728196}
+    .availability{
+      text-align:right;
+      font-size:9px;color:#6a798d;
+    }
+    .availability strong{
+      display:block;
+      color:var(--green);
+      font-size:10px;
+      margin-bottom:1px;
+    }
+    .social-stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+    .social-box{
+      text-align:center;
+      padding:9px 5px;
+      background:#f8fbff;
+      border:1px solid #e4ebf4;
+      border-radius:10px;
+    }
+    .social-box strong{display:block;font-size:14px}
+    .social-box span{font-size:9px;color:#718095}
+    .review{
+      padding:9px 0;
+      border-top:1px solid #edf1f5;
+    }
+    .review:first-of-type{border-top:0;padding-top:0}
+    .review-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .review-user{font-size:10px;font-weight:800}
+    .review-stars{font-size:10px;color:#f4aa19}
+    .review-text{font-size:10px;line-height:1.55;color:#596b80}
+    .related-scroll{
+      display:grid;
+      grid-auto-flow:column;
+      grid-auto-columns:80px;
+      gap:10px;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .related-scroll::-webkit-scrollbar{display:none}
+    .related-card{min-width:0}
+    .related-cover{
+      width:80px;aspect-ratio:2/3;border-radius:5px;
+      border:1px solid #d7dfe8;
+      display:flex;align-items:center;justify-content:center;
+      text-align:center;font-size:9px;font-weight:800;padding:5px;
+      box-shadow:0 2px 7px rgba(20,40,65,.1);
+    }
+    .r1{background:#e9ddd0;color:#503d31}
+    .r2{background:#121212;color:#fff}
+    .r3{background:#eaf3ee;color:#3a6c59}
+    .related-title{
+      font-size:9px;font-weight:800;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      margin-top:4px;
+    }
+    .bottom-nav{
+      position:absolute;left:0;right:0;bottom:0;
+      height:68px;z-index:40;
+      display:grid;grid-template-columns:repeat(5,1fr);
+      background:rgba(255,255,255,.97);
+      border-top:1px solid #e5ebf2;
+      padding-bottom:max(5px,env(safe-area-inset-bottom));
+    }
+    .nav-item{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:2px;color:#6c7d91;font-size:9px;font-weight:700;text-decoration:none
+    }
+    .nav-item.active{color:var(--blue)}
+    .nav-item .icon{width:19px;height:19px}
+    .toast{
+      position:absolute;left:18px;right:18px;bottom:78px;z-index:50;
+      transform:translateY(120px);opacity:0;
+      transition:.25s ease;
+      background:#132a49;color:#fff;
+      padding:11px 13px;border-radius:10px;
+      box-shadow:0 8px 25px rgba(10,25,45,.22);
+      font-size:11px;font-weight:700;
+    }
+    .toast.show{transform:translateY(0);opacity:1}
+    .modal-backdrop{
+      position:absolute;inset:0;z-index:60;
+      background:rgba(15,29,48,.36);
+      display:none;align-items:flex-end;
+    }
+    .modal-backdrop.show{display:flex}
+    .sheet{
+      width:100%;
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      padding:16px 16px 22px;
+      box-shadow:0 -8px 25px rgba(15,29,48,.16);
+    }
+    .sheet-handle{
+      width:44px;height:4px;border-radius:99px;background:#d6dee8;margin:0 auto 14px
+    }
+    .sheet-title{font-size:15px;font-weight:850;margin-bottom:10px}
+    .sheet-option{
+      width:100%;height:44px;border:0;border-bottom:1px solid #eef2f6;background:#fff;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0;font-size:12px;font-weight:700;color:#27415f;
+    }
+    @media(max-width:430px){
+      body{background:#fff}
+      .demo-stage{display:block;padding:0}
+      .phone{width:100%;height:100vh;min-height:100vh;border:0;border-radius:0;box-shadow:none}
+      .phone::before{display:none}
+    }
+  </style>
+</head>
+<body>
+  <main class="demo-stage">
+    <section class="phone" aria-label="책 상세 화면">
+      <div class="screen">
+        <div class="statusbar" aria-hidden="true">
+          <span>9:41</span>
+          <span class="status-icons">
+            <svg class="tiny-svg" viewBox="0 0 20 20"><path d="M2 15h2V9H2v6Zm4 0h2V6H6v9Zm4 0h2V3h-2v12Zm4 0h2V1h-2v14Z" fill="currentColor"/></svg>
+            <svg class="tiny-svg" viewBox="0 0 20 20"><path d="M2.5 7.5a11 11 0 0 1 15 0M5.2 10.2a7.2 7.2 0 0 1 9.6 0M8 13a3.2 3.2 0 0 1 4 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><circle cx="10" cy="15.5" r="1.2" fill="currentColor"/></svg>
+            <svg class="tiny-svg" viewBox="0 0 24 20"><rect x="1" y="4" width="19" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="3" y="6" width="14" height="8" rx="1" fill="currentColor"/><path d="M21 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </div>
+
+        <header class="topbar">
+          <button class="icon-btn" aria-label="뒤로" onclick="notify('이전 화면으로 이동합니다')">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="topbar-title">책 상세</div>
+          <div class="top-actions">
+            <button class="icon-btn" aria-label="읽고 싶어요" onclick="toggleWish(this)">
+              <svg class="icon wish-icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.8a5.4 5.4 0 0 0 0-7.6Z"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="공유" onclick="notify('공유 메뉴를 엽니다')">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="hero">
+            <div class="cover" aria-label="어린 왕자 표지">
+              <div class="cover-title">어린 왕자</div>
+              <div class="cover-sub">Le Petit Prince</div>
+              <span class="star s1"></span><span class="star s2"></span>
+              <span class="planet"></span><span class="little"></span>
+            </div>
+            <div>
+              <h1 class="meta-title">어린 왕자</h1>
+              <div class="meta-author">생텍쥐페리 지음 · 황현산 옮김</div>
+              <div class="meta-pub">문학동네 · 2015. 12. 10</div>
+              <div class="tags">
+                <span class="tag">소설</span>
+                <span class="tag">프랑스 문학</span>
+                <span class="tag">고전</span>
+                <span class="tag">성장</span>
+              </div>
+              <div class="rating">
+                <span class="stars">★</span>
+                <strong>4.6</strong>
+                <span>(1,234)</span>
+                <span>· 리뷰 128개</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="primary-actions">
+            <button class="btn-main" onclick="openReadingSheet()">
+              <svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+              읽는 중
+            </button>
+            <button class="btn-sub" onclick="notify('독서 기록을 작성합니다')">
+              <svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+              기록하기
+            </button>
+            <button class="btn-more" onclick="notify('더보기 메뉴를 엽니다')">•••</button>
+          </div>
+
+          <nav class="tabs" aria-label="책 상세 탭">
+            <button class="tab active">소개</button>
+            <button class="tab">도서관</button>
+            <button class="tab">사람들의 활동</button>
+            <button class="tab">리뷰</button>
+            <button class="tab">관련 책</button>
+          </nav>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">책 소개</h2>
+              <button class="more-link" onclick="notify('전체 소개를 펼칩니다')">더보기 ›</button>
+            </div>
+            <p class="desc">
+              세상에서 가장 순수한 시선으로 사랑과 우정, 삶의 의미를 묻는 세계적인 고전.
+              어린 왕자가 여러 별을 여행하며 만난 사람들을 통해 관계와 책임의 의미를 돌아보게 합니다.
+            </p>
+            <div class="quote">“가장 중요한 것은 눈에 보이지 않아.”</div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">내 독서 상태</h2>
+            </div>
+            <div class="status-card">
+              <div class="status-left">
+                <div class="status-icon">
+                  <svg class="icon" style="width:19px;height:19px" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+                </div>
+                <div>
+                  <div class="status-title" id="readingStatusText">읽는 중</div>
+                  <div class="status-meta">시작일 2025. 9. 5.</div>
+                </div>
+              </div>
+              <button class="status-change" onclick="openReadingSheet()">상태 변경</button>
+            </div>
+            <div class="progress-row">
+              <div class="progress"><span id="progressBar"></span></div>
+              <span class="progress-pct" id="progressText">60%</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">내 소장 / 대출 현황</h2>
+            </div>
+            <div class="my-state-grid">
+              <div class="mini-state">
+                <div class="label">내 서재</div>
+                <strong>소장 중</strong>
+                <small>구매일 2024. 6. 10.</small>
+              </div>
+              <div class="mini-state loan">
+                <div class="label">중앙도서관</div>
+                <strong>대출 중</strong>
+                <small class="due">9월 20일 반납 · 3일 남음</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">도서관 소장 정보</h2>
+              <button class="more-link" onclick="notify('전체 도서관을 봅니다')">전체 도서관 ›</button>
+            </div>
+
+            <div class="library-row">
+              <div class="lib-icon">
+                <svg class="icon" style="width:17px;height:17px" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M9 21V10"/><path d="M15 21V10"/><path d="m3 10 9-5 9 5Z"/></svg>
+              </div>
+              <div>
+                <div class="lib-name">중앙도서관</div>
+                <div class="lib-meta">청구기호 863 ㅅ-ㅇ · 총 4권</div>
+              </div>
+              <div class="availability"><strong>대출가능 2권</strong>대출중 2권</div>
+            </div>
+
+            <div class="library-row">
+              <div class="lib-icon">
+                <svg class="icon" style="width:17px;height:17px" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M9 21V10"/><path d="M15 21V10"/><path d="m3 10 9-5 9 5Z"/></svg>
+              </div>
+              <div>
+                <div class="lib-name">행복도서관</div>
+                <div class="lib-meta">청구기호 863 ㅅ-ㅇ · 총 3권</div>
+              </div>
+              <div class="availability"><strong style="color:#d97706">예약 2명</strong>대출가능 0권</div>
+            </div>
+
+            <div class="library-row">
+              <div class="lib-icon">
+                <svg class="icon" style="width:17px;height:17px" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M9 21V10"/><path d="M15 21V10"/><path d="m3 10 9-5 9 5Z"/></svg>
+              </div>
+              <div>
+                <div class="lib-name">새빛도서관</div>
+                <div class="lib-meta">청구기호 863 ㅅ-ㅇ · 총 2권</div>
+              </div>
+              <div class="availability"><strong>대출가능 1권</strong>대출중 1권</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">사람들의 활동</h2>
+              <button class="more-link" onclick="notify('활동 전체 보기')">더보기 ›</button>
+            </div>
+            <div class="social-stats">
+              <div class="social-box"><span>읽는 중</span><strong>12명</strong></div>
+              <div class="social-box"><span>완독</span><strong>28명</strong></div>
+              <div class="social-box"><span>리뷰</span><strong>128개</strong></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">리뷰</h2>
+              <button class="more-link" onclick="notify('리뷰 전체 보기')">128개 보기 ›</button>
+            </div>
+            <article class="review">
+              <div class="review-head">
+                <span class="review-user">책읽는민지</span>
+                <span class="review-stars">★★★★★</span>
+              </div>
+              <div class="review-text">짧지만 읽을 때마다 다르게 다가오는 책이에요. 관계와 책임에 대해 다시 생각하게 됩니다.</div>
+            </article>
+            <article class="review">
+              <div class="review-head">
+                <span class="review-user">오늘도한권</span>
+                <span class="review-stars">★★★★☆</span>
+              </div>
+              <div class="review-text">어른이 되어 다시 읽으니 어린 시절과는 전혀 다른 문장이 눈에 들어옵니다.</div>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">관련 책</h2>
+              <button class="more-link" onclick="notify('관련 책 전체 보기')">더보기 ›</button>
+            </div>
+            <div class="related-scroll">
+              <article class="related-card">
+                <div class="related-cover r1">아몬드</div>
+                <div class="related-title">아몬드</div>
+              </article>
+              <article class="related-card">
+                <div class="related-cover r2">PROJECT<br>HAIL<br>MARY</div>
+                <div class="related-title">프로젝트 헤일메리</div>
+              </article>
+              <article class="related-card">
+                <div class="related-cover r3">자존감<br>수업</div>
+                <div class="related-title">자존감 수업</div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <nav class="bottom-nav" aria-label="주요 메뉴">
+        <a href="#" class="nav-item" onclick="notify('홈으로 이동합니다');return false">
+          <svg class="icon" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+          <span>홈</span>
+        </a>
+        <a href="#" class="nav-item active" onclick="return false">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <span>검색</span>
+        </a>
+        <a href="#" class="nav-item" onclick="notify('나의 서재로 이동합니다');return false">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+          <span>내 서재</span>
+        </a>
+        <a href="#" class="nav-item" onclick="notify('독서 활동으로 이동합니다');return false">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>
+          <span>활동</span>
+        </a>
+        <a href="#" class="nav-item" onclick="notify('내 정보로 이동합니다');return false">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <span>나</span>
+        </a>
+      </nav>
+
+      <div class="toast" id="toast">알림</div>
+
+      <div class="modal-backdrop" id="readingSheet" onclick="closeSheet(event)">
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-title">독서 상태 변경</div>
+          <button class="sheet-option" onclick="setReadingStatus('읽고 싶어요',0)">읽고 싶어요 <span>›</span></button>
+          <button class="sheet-option" onclick="setReadingStatus('읽는 중',60)">읽는 중 <span>✓</span></button>
+          <button class="sheet-option" onclick="setReadingStatus('다 읽음',100)">다 읽었어요 <span>›</span></button>
+          <button class="sheet-option" onclick="setReadingStatus('읽기 중단',35)">읽기 중단 <span>›</span></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let toastTimer;
+
+    function notify(message){
+      const el=document.getElementById('toast');
+      el.textContent=message;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+
+    function toggleWish(button){
+      button.classList.toggle('is-wished');
+      const icon=button.querySelector('.wish-icon');
+      const wished=button.classList.contains('is-wished');
+      icon.style.fill=wished ? '#1769e8' : 'none';
+      icon.style.color=wished ? '#1769e8' : '#213754';
+      notify(wished ? '읽고 싶어요에 추가했습니다' : '읽고 싶어요에서 제거했습니다');
+    }
+
+    function openReadingSheet(){
+      document.getElementById('readingSheet').classList.add('show');
+    }
+
+    function closeSheet(event){
+      if(event.target.id==='readingSheet'){
+        document.getElementById('readingSheet').classList.remove('show');
+      }
+    }
+
+    function setReadingStatus(label, percent){
+      document.getElementById('readingStatusText').textContent=label;
+      document.getElementById('progressBar').style.width=percent+'%';
+      document.getElementById('progressText').textContent=percent+'%';
+      document.querySelector('.btn-main').childNodes[2].textContent=' '+label;
+      document.getElementById('readingSheet').classList.remove('show');
+      notify(label+' 상태로 변경했습니다');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Reader Search — 독서 중심 도서관 플랫폼</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root{
+      --ink:#10213f;
+      --muted:#68798d;
+      --line:#dfe7f0;
+      --blue:#1769e8;
+      --green:#15985b;
+      --amber:#d97706;
+      --purple:#6d55ba;
+      --soft-blue:#eef6ff;
+      --soft-green:#eaf9f1;
+      --soft-purple:#f2efff;
+      --bg:#f6f9fd;
+      --card:#fff;
+      --shadow:0 2px 10px rgba(21,50,82,.045);
+      --max:1220px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+    }
+    button,input{font:inherit}
+
+    .app{min-height:100vh}
+
+    .mobile-status{
+      height:30px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:0 16px 4px;
+      background:#fff;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .tiny-svg{width:13px;height:13px}
+
+    .mobile-header{
+      background:#fff;
+      border-bottom:1px solid #edf1f5;
+      padding:10px 14px 8px;
+      position:sticky;
+      top:0;
+      z-index:30;
+    }
+
+    .title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+
+    .page-title{
+      margin:0;
+      font-size:21px;
+      font-weight:850;
+      letter-spacing:-.04em;
+    }
+
+    .icon-btn{
+      width:38px;height:38px;
+      border:0;
+      border-radius:11px;
+      background:transparent;
+      display:grid;place-items:center;
+      color:#29415f;
+    }
+
+    .icon-btn:hover{background:#f3f7fb}
+
+    .icon{
+      width:20px;height:20px;
+      stroke:currentColor;fill:none;stroke-width:1.9;
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+
+    .searchbar{
+      height:44px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid #cad8e7;
+      border-radius:12px;
+      background:#fff;
+      padding:0 10px 0 12px;
+    }
+
+    .searchbar .icon{width:18px;height:18px;color:#59728f}
+
+    .search-input{
+      flex:1;
+      min-width:0;
+      border:0;
+      outline:0;
+      background:transparent;
+      font-size:13px;
+      font-weight:700;
+      color:#18304e;
+    }
+
+    .clear-btn{
+      width:24px;height:24px;
+      border:0;border-radius:50%;
+      display:grid;place-items:center;
+      background:#edf2f7;color:#6d7e90;
+      font-size:12px;font-weight:800;
+    }
+
+    .filter-btn{
+      width:34px;height:34px;
+      border:0;background:transparent;
+      display:grid;place-items:center;
+      color:#46617f;border-radius:9px;
+    }
+
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      margin:0 -14px;
+      padding:0 14px;
+      border-bottom:1px solid #e8edf3;
+      background:#fff;
+    }
+
+    .tab{
+      border:0;background:transparent;
+      padding:10px 0 9px;
+      color:#77869a;
+      font-size:10px;font-weight:800;
+      position:relative;
+    }
+
+    .tab.active{color:var(--blue)}
+
+    .tab.active::after{
+      content:"";
+      position:absolute;left:16%;right:16%;bottom:-1px;
+      height:2px;background:var(--blue);border-radius:99px;
+    }
+
+    .desktop-header{display:none}
+
+    .page{
+      width:100%;
+      max-width:var(--max);
+      margin:0 auto;
+      padding:10px 14px 88px;
+    }
+
+    .desktop-title{display:none}
+
+    .main-grid{display:block}
+
+    .results-main{min-width:0}
+
+    .chip-row{
+      display:flex;
+      gap:7px;
+      overflow:auto;
+      scrollbar-width:none;
+      margin-bottom:10px;
+    }
+
+    .chip-row::-webkit-scrollbar{display:none}
+
+    .chip{
+      flex:0 0 auto;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:16px;
+      border:1px solid #d6e0ea;
+      background:#fff;
+      color:#51647c;
+      font-size:9px;
+      font-weight:800;
+    }
+
+    .chip.active{
+      background:var(--soft-blue);
+      border-color:#bcd8ff;
+      color:var(--blue);
+    }
+
+    .summary-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:8px;
+      font-size:9px;
+      color:#7a899b;
+    }
+
+    .summary-row strong{color:#415974}
+
+    .sort{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      border:0;background:transparent;
+      color:#536981;
+      font-size:9px;font-weight:800;
+    }
+
+    .result-list{
+      border-top:1px solid #edf1f5;
+    }
+
+    .result{
+      display:grid;
+      grid-template-columns:68px 1fr 28px;
+      gap:10px;
+      padding:12px 0;
+      border-bottom:1px solid #edf1f5;
+      align-items:start;
+    }
+
+    .cover{
+      width:68px;
+      aspect-ratio:2/3;
+      border-radius:6px;
+      border:1px solid #d7dfe8;
+      box-shadow:0 2px 7px rgba(20,40,65,.10);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:5px;
+      font-size:9px;
+      font-weight:800;
+      position:relative;
+    }
+
+    .prince{
+      background:linear-gradient(#fff 0 67%,#f2f4f6 67%);
+      color:#4b5563;
+      font-family:serif;
+      align-items:flex-start;
+      padding-top:9px;
+    }
+
+    .prince .planet{
+      position:absolute;bottom:9px;left:10px;
+      width:47px;height:25px;
+      border-radius:50%;background:#8d9293;
+      transform:rotate(-9deg);
+    }
+
+    .prince .little{
+      position:absolute;left:36px;bottom:28px;
+      width:5px;height:18px;
+      background:#f0c83d;
+      border-radius:4px 4px 2px 2px;
+      transform:rotate(8deg);
+    }
+
+    .prince-blue{background:linear-gradient(160deg,#74a6d8 0 55%,#376c9b 56% 100%);color:#fff}
+    .notes{background:#f5f0e8;color:#6a5a44;font-family:serif}
+    .another{background:#f4f8ef;color:#4f6d45;font-family:serif}
+
+    .result-main{min-width:0}
+
+    .result-title{
+      margin:0 0 2px;
+      font-size:13px;
+      line-height:1.4;
+      font-weight:850;
+      letter-spacing:-.03em;
+    }
+
+    .result-meta{
+      font-size:9px;
+      line-height:1.45;
+      color:#6b7b8e;
+      margin-bottom:5px;
+    }
+
+    .rating{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      font-size:9px;
+      color:#758396;
+      margin-bottom:6px;
+    }
+
+    .star{color:#f4aa19}
+
+    .library-info{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:23px;
+      padding:0 7px;
+      border-radius:7px;
+      font-size:8px;
+      font-weight:800;
+      border:1px solid transparent;
+    }
+
+    .badge.library{background:#eef6ff;color:#1769e8;border-color:#d5e7ff}
+    .badge.available{background:#eaf9f1;color:#168452;border-color:#d5f0e1}
+    .badge.owned{background:#f2efff;color:#6d55ba;border-color:#e3defa}
+    .badge.reading{background:#eaf9f1;color:#168452;border-color:#d5f0e1}
+
+    .bookmark{
+      width:28px;height:32px;
+      border:0;background:transparent;
+      color:#5e7187;
+      display:grid;place-items:center;
+      border-radius:8px;
+    }
+
+    .bookmark.active{color:var(--blue)}
+    .bookmark.active .icon{fill:#dbeafe}
+
+    .side-panel{display:none}
+
+    .bottom-nav{
+      position:fixed;
+      left:0;right:0;bottom:0;
+      height:68px;
+      z-index:50;
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      background:rgba(255,255,255,.97);
+      border-top:1px solid #e5ebf2;
+      padding-bottom:max(5px,env(safe-area-inset-bottom));
+      backdrop-filter:blur(10px);
+    }
+
+    .nav-item{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      color:#6c7d91;
+      font-size:9px;
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    .nav-item.active{color:var(--blue)}
+    .nav-item .icon{width:19px;height:19px}
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:82px;
+      transform:translate(-50%,120px);
+      width:min(340px,calc(100vw - 28px));
+      opacity:0;
+      z-index:80;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#132a49;
+      color:#fff;
+      font-size:10px;
+      font-weight:750;
+      box-shadow:0 8px 25px rgba(10,25,45,.22);
+      transition:.25s ease;
+    }
+
+    .toast.show{
+      transform:translate(-50%,0);
+      opacity:1;
+    }
+
+    .filter-sheet-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:70;
+      display:none;
+      align-items:flex-end;
+      background:rgba(15,29,48,.36);
+    }
+
+    .filter-sheet-backdrop.show{display:flex}
+
+    .sheet{
+      width:100%;
+      background:#fff;
+      border-radius:20px 20px 0 0;
+      padding:15px 16px 22px;
+      box-shadow:0 -8px 25px rgba(15,29,48,.16);
+    }
+
+    .handle{
+      width:44px;height:4px;
+      border-radius:99px;
+      background:#d7dfe8;
+      margin:0 auto 13px;
+    }
+
+    .sheet-title{
+      font-size:15px;
+      font-weight:850;
+      margin-bottom:12px;
+    }
+
+    .filter-group{margin-bottom:14px}
+    .filter-label{font-size:10px;color:#6a7b8e;font-weight:800;margin-bottom:7px}
+
+    .option-row{display:flex;flex-wrap:wrap;gap:7px}
+
+    .sheet-option{
+      border:1px solid #d6e0ea;
+      background:#fff;
+      border-radius:8px;
+      height:32px;
+      padding:0 9px;
+      font-size:10px;
+      font-weight:800;
+      color:#52657c;
+    }
+
+    .sheet-option.active{
+      background:#eef6ff;
+      color:#1769e8;
+      border-color:#bdd9ff;
+    }
+
+    .apply-btn{
+      width:100%;
+      height:42px;
+      border:0;
+      border-radius:9px;
+      background:#1769e8;
+      color:#fff;
+      font-size:12px;
+      font-weight:850;
+    }
+
+    /* tablet */
+    @media(min-width:768px){
+      .mobile-status{display:none}
+      .mobile-header{
+        position:static;
+        padding:16px 22px 10px;
+      }
+      .mobile-header-inner{
+        max-width:var(--max);
+        margin:0 auto;
+      }
+      .page{padding:16px 22px 32px}
+
+      .result{
+        grid-template-columns:82px 1fr 30px;
+        gap:14px;
+        padding:14px 0;
+      }
+
+      .cover{width:82px}
+      .result-title{font-size:14px}
+      .result-meta,.rating{font-size:10px}
+      .badge{font-size:9px}
+
+      .bottom-nav{
+        position:sticky;
+        bottom:0;
+        max-width:620px;
+        margin:0 auto 14px;
+        border:1px solid #dfe7f0;
+        border-radius:18px;
+        box-shadow:0 8px 24px rgba(20,40,65,.08);
+        overflow:hidden;
+      }
+
+      .toast{bottom:94px}
+    }
+
+    /* desktop */
+    @media(min-width:1100px){
+      .mobile-status,.mobile-header{display:none}
+
+      .desktop-header{
+        height:68px;
+        display:block;
+        background:#fff;
+        border-bottom:1px solid #e2e9f1;
+        position:sticky;
+        top:0;
+        z-index:40;
+      }
+
+      .desktop-header-inner{
+        max-width:var(--max);
+        height:100%;
+        margin:0 auto;
+        padding:0 24px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:24px;
+      }
+
+      .brand{
+        display:flex;
+        align-items:center;
+        gap:9px;
+        font-size:16px;
+        font-weight:850;
+        color:#193354;
+        white-space:nowrap;
+      }
+
+      .brand-mark{
+        width:32px;height:32px;
+        border-radius:9px;
+        background:#1769e8;
+        color:#fff;
+        display:grid;place-items:center;
+        font-size:15px;
+      }
+
+      .desktop-search{
+        flex:1;
+        max-width:560px;
+        height:40px;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        padding:0 12px;
+        border:1px solid #d6e0ea;
+        border-radius:9px;
+        background:#fff;
+        color:#8997a7;
+        font-size:11px;
+        font-weight:650;
+      }
+
+      .desktop-search .icon{width:17px;height:17px}
+
+      .desktop-profile{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        font-size:10px;
+        color:#52667d;
+        font-weight:800;
+      }
+
+      .avatar{
+        width:32px;height:32px;
+        border-radius:50%;
+        background:#dceaff;
+        color:#1769e8;
+        display:grid;place-items:center;
+        font-weight:850;
+      }
+
+      .page{padding:24px}
+
+      .desktop-title{
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:20px;
+        margin-bottom:14px;
+      }
+
+      .desktop-title h1{
+        margin:0;
+        font-size:26px;
+        font-weight:850;
+        letter-spacing:-.04em;
+      }
+
+      .desktop-title p{
+        margin:5px 0 0;
+        font-size:11px;
+        color:#77879a;
+      }
+
+      .desktop-searchbox{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin-bottom:14px;
+      }
+
+      .desktop-searchbox .searchbar{
+        flex:1;
+        max-width:none;
+        border-radius:10px;
+      }
+
+      .main-grid{
+        display:grid;
+        grid-template-columns:minmax(0,1.65fr) minmax(300px,.72fr);
+        gap:14px;
+        align-items:start;
+      }
+
+      .side-panel{display:block}
+
+      .result-list{
+        border:1px solid var(--line);
+        border-radius:12px;
+        background:#fff;
+        overflow:hidden;
+        box-shadow:var(--shadow);
+      }
+
+      .result{
+        padding:14px;
+      }
+
+      .result:last-child{border-bottom:0}
+
+      .cover{width:86px}
+
+      .side-card{
+        background:#fff;
+        border:1px solid var(--line);
+        border-radius:12px;
+        box-shadow:var(--shadow);
+        padding:14px;
+        margin-bottom:12px;
+      }
+
+      .side-title{
+        margin:0 0 10px;
+        font-size:13px;
+        font-weight:850;
+      }
+
+      .recent-search{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+        padding:8px 0;
+        border-bottom:1px solid #edf1f5;
+        font-size:10px;
+      }
+
+      .recent-search:last-child{border-bottom:0}
+
+      .recent-search span{color:#52667d}
+      .recent-search small{color:#8b98a8}
+
+      .recommend-row{
+        display:grid;
+        grid-template-columns:42px 1fr;
+        gap:8px;
+        align-items:center;
+        padding:8px 0;
+        border-bottom:1px solid #edf1f5;
+      }
+
+      .recommend-row:last-child{border-bottom:0}
+
+      .recommend-cover{
+        width:42px;
+        aspect-ratio:2/3;
+        border-radius:4px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        font-size:7px;
+        font-weight:800;
+        border:1px solid #dce4ec;
+      }
+
+      .recommend-row strong{
+        display:block;
+        font-size:10px;
+        margin-bottom:2px;
+      }
+
+      .recommend-row span{
+        font-size:8px;
+        color:#7e8c9c;
+      }
+
+      .bottom-nav{display:none}
+
+      .filter-sheet-backdrop{
+        align-items:center;
+        justify-content:center;
+      }
+
+      .sheet{
+        width:440px;
+        border-radius:16px;
+      }
+
+      .handle{display:none}
+      .toast{bottom:24px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="mobile-status" aria-hidden="true">
+      <span>9:41</span>
+      <svg class="tiny-svg" viewBox="0 0 20 20"><path d="M2 15h2V9H2v6Zm4 0h2V6H6v9Zm4 0h2V3h-2v12Zm4 0h2V1h-2v14Z" fill="currentColor"/></svg>
+    </div>
+
+    <header class="mobile-header">
+      <div class="mobile-header-inner">
+        <div class="title-row">
+          <h1 class="page-title">검색</h1>
+          <button class="icon-btn" onclick="notify('최근 검색 기록을 엽니다')" aria-label="검색 기록">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>
+          </button>
+        </div>
+
+        <div class="searchbar">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <input id="searchInputMobile" class="search-input" value="어린 왕자" oninput="syncSearch(this.value)" />
+          <button class="clear-btn" onclick="clearSearch()">×</button>
+          <button class="filter-btn" onclick="openFilter()" aria-label="필터">
+            <svg class="icon" style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+          </button>
+        </div>
+
+        <nav class="tabs" aria-label="검색 유형">
+          <button class="tab active" onclick="switchTab(this)">전체</button>
+          <button class="tab" onclick="switchTab(this)">책</button>
+          <button class="tab" onclick="switchTab(this)">저자</button>
+          <button class="tab" onclick="switchTab(this)">주제</button>
+        </nav>
+      </div>
+    </header>
+
+    <header class="desktop-header">
+      <div class="desktop-header-inner">
+        <div class="brand">
+          <div class="brand-mark">B</div>
+          BookFlow
+        </div>
+
+        <div class="desktop-search">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <span>책, 저자, 주제를 검색하세요</span>
+        </div>
+
+        <div class="desktop-profile">
+          <div class="avatar">김</div>
+          김민수
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="desktop-title">
+        <div>
+          <h1>검색</h1>
+          <p>플랫폼 전체 책과 이용 도서관의 소장 여부를 함께 확인합니다.</p>
+        </div>
+      </section>
+
+      <div class="desktop-searchbox" style="display:none">
+        <div class="searchbar">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <input id="searchInputDesktop" class="search-input" value="어린 왕자" oninput="syncSearch(this.value)" />
+          <button class="clear-btn" onclick="clearSearch()">×</button>
+        </div>
+        <button class="filter-btn" style="width:42px;height:42px;border:1px solid #d7e1eb;background:#fff" onclick="openFilter()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+        </button>
+      </div>
+
+      <div class="main-grid">
+        <div class="results-main">
+          <div class="chip-row">
+            <button class="chip active" onclick="toggleChip(this)">대출가능</button>
+            <button class="chip" onclick="toggleChip(this)">내 서재</button>
+            <button class="chip" onclick="toggleChip(this)">관심주제</button>
+            <button class="chip" onclick="toggleChip(this)">최근 출간</button>
+          </div>
+
+          <div class="summary-row">
+            <span>검색 결과 <strong id="resultCount">4개</strong></span>
+            <button class="sort" onclick="notify('정렬 기준을 변경합니다')">
+              정확도순
+              <svg class="icon" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+
+          <section class="result-list" id="resultList">
+            <article class="result" data-search="어린 왕자 생텍쥐페리 문학동네">
+              <div class="cover prince">
+                어린 왕자
+                <span class="planet"></span><span class="little"></span>
+              </div>
+              <div class="result-main">
+                <h2 class="result-title">어린 왕자</h2>
+                <div class="result-meta">생텍쥐페리 지음 · 문학동네 · 2015. 12. 10.</div>
+                <div class="rating"><span class="star">★</span><strong>4.6</strong><span>(1,234)</span></div>
+                <div class="library-info">
+                  <span class="badge library">중앙도서관</span>
+                  <span class="badge available">대출가능 2권</span>
+                  <span class="badge reading">읽는 중</span>
+                </div>
+              </div>
+              <button class="bookmark active" onclick="toggleBookmark(this)">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4Z"/></svg>
+              </button>
+            </article>
+
+            <article class="result" data-search="어린 왕자 한글 영문판 생텍쥐페리 더클래식">
+              <div class="cover prince-blue">어린 왕자<br><small>한글+영문판</small></div>
+              <div class="result-main">
+                <h2 class="result-title">어린 왕자 (한글+영문판)</h2>
+                <div class="result-meta">생텍쥐페리 지음 · 더클래식 · 2020. 3. 20.</div>
+                <div class="rating"><span class="star">★</span><strong>4.8</strong><span>(892)</span></div>
+                <div class="library-info">
+                  <span class="badge owned">내 서재 소장</span>
+                  <span class="badge available">대출가능 1권</span>
+                </div>
+              </div>
+              <button class="bookmark" onclick="toggleBookmark(this)">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4Z"/></svg>
+              </button>
+            </article>
+
+            <article class="result" data-search="어린 왕자 필사 노트 생텍쥐페리 위즈덤하우스">
+              <div class="cover notes">어린 왕자<br>필사 노트</div>
+              <div class="result-main">
+                <h2 class="result-title">어린 왕자 필사 노트</h2>
+                <div class="result-meta">생텍쥐페리 지음 · 위즈덤하우스 · 2021. 6. 1.</div>
+                <div class="rating"><span class="star">★</span><strong>4.7</strong><span>(320)</span></div>
+                <div class="library-info">
+                  <span class="badge library">중앙도서관</span>
+                  <span class="badge available">대출가능 3권</span>
+                </div>
+              </div>
+              <button class="bookmark" onclick="toggleBookmark(this)">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4Z"/></svg>
+              </button>
+            </article>
+
+            <article class="result" data-search="생텍쥐페리가 사랑한 것들 마음산책">
+              <div class="cover another">생텍쥐페리가<br>사랑한 것들</div>
+              <div class="result-main">
+                <h2 class="result-title">생텍쥐페리가 사랑한 것들</h2>
+                <div class="result-meta">앙투안 드 생텍쥐페리 · 마음산책 · 2018. 11. 5.</div>
+                <div class="rating"><span class="star">★</span><strong>4.5</strong><span>(210)</span></div>
+                <div class="library-info">
+                  <span class="badge library">중앙도서관</span>
+                  <span class="badge available">대출가능 1권</span>
+                </div>
+              </div>
+              <button class="bookmark" onclick="toggleBookmark(this)">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4Z"/></svg>
+              </button>
+            </article>
+          </section>
+        </div>
+
+        <aside class="side-panel">
+          <section class="side-card">
+            <h2 class="side-title">최근 검색</h2>
+            <div class="recent-search"><span>어린 왕자</span><small>오늘</small></div>
+            <div class="recent-search"><span>성장 소설</span><small>어제</small></div>
+            <div class="recent-search"><span>앤디 위어</span><small>9월 7일</small></div>
+          </section>
+
+          <section class="side-card">
+            <h2 class="side-title">관심 주제 추천</h2>
+
+            <div class="recommend-row">
+              <div class="recommend-cover" style="background:#efe4d5;color:#684e39">아몬드</div>
+              <div>
+                <strong>아몬드</strong>
+                <span>성장 · 한국소설</span>
+              </div>
+            </div>
+
+            <div class="recommend-row">
+              <div class="recommend-cover" style="background:#111;color:#fff">PROJECT<br>HAIL MARY</div>
+              <div>
+                <strong>프로젝트 헤일메리</strong>
+                <span>SF · 과학 · 모험</span>
+              </div>
+            </div>
+
+            <div class="recommend-row">
+              <div class="recommend-cover" style="background:#eaf3ee;color:#3a6c59">자존감<br>수업</div>
+              <div>
+                <strong>자존감 수업</strong>
+                <span>심리 · 자기계발</span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <nav class="bottom-nav" aria-label="주요 메뉴">
+      <a href="#" class="nav-item" onclick="notify('홈으로 이동합니다');return false">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+        <span>홈</span>
+      </a>
+      <a href="#" class="nav-item active" onclick="return false">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <span>검색</span>
+      </a>
+      <a href="#" class="nav-item" onclick="notify('나의 서재로 이동합니다');return false">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        <span>내 서재</span>
+      </a>
+      <a href="#" class="nav-item" onclick="notify('독서 활동으로 이동합니다');return false">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>
+        <span>활동</span>
+      </a>
+      <a href="#" class="nav-item" onclick="notify('내 정보로 이동합니다');return false">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span>나</span>
+      </a>
+    </nav>
+
+    <div class="toast" id="toast">알림</div>
+
+    <div class="filter-sheet-backdrop" id="filterSheet" onclick="closeFilter(event)">
+      <div class="sheet">
+        <div class="handle"></div>
+        <div class="sheet-title">검색 필터</div>
+
+        <div class="filter-group">
+          <div class="filter-label">이용 상태</div>
+          <div class="option-row">
+            <button class="sheet-option active" onclick="toggleSheetOption(this)">대출가능</button>
+            <button class="sheet-option" onclick="toggleSheetOption(this)">내 서재</button>
+            <button class="sheet-option" onclick="toggleSheetOption(this)">읽는 중</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">자료 범위</div>
+          <div class="option-row">
+            <button class="sheet-option active" onclick="toggleSheetOption(this)">전체</button>
+            <button class="sheet-option" onclick="toggleSheetOption(this)">종이책</button>
+            <button class="sheet-option" onclick="toggleSheetOption(this)">전자책</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">출판 시기</div>
+          <div class="option-row">
+            <button class="sheet-option" onclick="toggleSheetOption(this)">최근 1년</button>
+            <button class="sheet-option" onclick="toggleSheetOption(this)">최근 5년</button>
+            <button class="sheet-option active" onclick="toggleSheetOption(this)">전체</button>
+          </div>
+        </div>
+
+        <button class="apply-btn" onclick="applyFilter()">필터 적용</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let toastTimer;
+
+    function notify(message){
+      const el=document.getElementById('toast');
+      el.textContent=message;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>el.classList.remove('show'),1700);
+    }
+
+    function syncSearch(value){
+      const mobile=document.getElementById('searchInputMobile');
+      const desktop=document.getElementById('searchInputDesktop');
+      if(mobile && mobile.value!==value) mobile.value=value;
+      if(desktop && desktop.value!==value) desktop.value=value;
+      handleSearch(value);
+    }
+
+    function clearSearch(){
+      syncSearch('');
+      const target=window.innerWidth>=1100 ? document.getElementById('searchInputDesktop') : document.getElementById('searchInputMobile');
+      if(target) target.focus();
+    }
+
+    function handleSearch(value){
+      const query=(value||'').trim().toLowerCase();
+      const results=[...document.querySelectorAll('.result')];
+      let visible=0;
+
+      results.forEach(row=>{
+        const show=!query || row.dataset.search.toLowerCase().includes(query);
+        row.style.display=show ? 'grid' : 'none';
+        if(show) visible++;
+      });
+
+      document.getElementById('resultCount').textContent=visible+'개';
+    }
+
+    function switchTab(button){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      button.classList.add('active');
+      notify(button.textContent+' 검색으로 전환했습니다');
+    }
+
+    function toggleChip(button){
+      button.classList.toggle('active');
+      notify(button.textContent+' 필터를 '+(button.classList.contains('active')?'적용했습니다':'해제했습니다'));
+    }
+
+    function toggleBookmark(button){
+      button.classList.toggle('active');
+      notify(button.classList.contains('active')?'읽고 싶어요에 추가했습니다':'읽고 싶어요에서 제거했습니다');
+    }
+
+    function openFilter(){
+      document.getElementById('filterSheet').classList.add('show');
+    }
+
+    function closeFilter(event){
+      if(event.target.id==='filterSheet'){
+        document.getElementById('filterSheet').classList.remove('show');
+      }
+    }
+
+    function toggleSheetOption(button){
+      button.classList.toggle('active');
+    }
+
+    function applyFilter(){
+      document.getElementById('filterSheet').classList.remove('show');
+      notify('검색 필터를 적용했습니다');
+    }
+
+    function syncDesktopSearch(){
+      const box=document.querySelector('.desktop-searchbox');
+      if(box) box.style.display=window.innerWidth>=1100 ? 'flex' : 'none';
+    }
+
+    syncDesktopSearch();
+    window.addEventListener('resize',syncDesktopSearch);
+  </script>
+</body>
+</html>

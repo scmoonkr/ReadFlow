@@ -1,0 +1,23 @@
+{
+  "name": "readflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "독서 중심 차세대 도서관 플랫폼 (ReadFlow)",
+  "workspaces": [
+    "server",
+    "apps/reader",
+    "apps/library",
+    "apps/manager"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev --workspace server",
+    "dev:reader": "npm run dev --workspace apps/reader",
+    "dev:library": "npm run dev --workspace apps/library",
+    "dev:manager": "npm run dev --workspace apps/manager",
+    "dev": "concurrently -n server,reader,library,manager -c blue,green,magenta,yellow \"npm:dev:server\" \"npm:dev:reader\" \"npm:dev:library\" \"npm:dev:manager\"",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

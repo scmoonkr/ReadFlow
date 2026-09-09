@@ -1,0 +1,93 @@
+/* ReadFlow 공용 디자인 토큰 — docs/style.md 기준
+ * Reader / Library / Manager 3개 앱이 동일한 Design System을 공유한다.
+ * (정보 밀도만 다르게 사용) */
+
+:root {
+  /* Primary (Blue) */
+  --color-primary-600: #2563eb;
+  --color-primary-500: #3b82f6;
+  --color-primary-100: #dbeafe;
+  --color-primary-50: #eff6ff;
+  --color-primary: var(--color-primary-600);
+
+  /* Neutral */
+  --color-ink: #111827;          /* Text Primary */
+  --color-muted: #6b7280;        /* Text Secondary */
+  --color-line: #e5e7eb;         /* Border */
+  --color-bg: #f8fafc;           /* Background */
+  --color-surface: #ffffff;      /* Surface */
+
+  /* Semantic (색은 상태 보조, 의미는 텍스트로) */
+  --color-success: #15985b;
+  --color-warning: #d97706;
+  --color-danger: #dc3d48;
+  --color-info: #2563eb;
+
+  /* Reader 보조 색 (soft) */
+  --soft-green: #eaf9f1;
+  --soft-blue: #eef6ff;
+  --soft-lavender: #f2efff;
+  --soft-orange: #fff7e3;
+  --warm-cream: #fbf7ee;
+
+  /* Typography */
+  --font-sans: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+
+  /* Spacing (4px 기반) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-btn: 8px;
+  --radius-card-backend: 10px;
+  --radius-card-reader: 14px;
+  --radius-modal: 16px;
+
+  /* Shadow (최소화) */
+  --shadow-card: 0 1px 4px rgba(18, 38, 63, 0.05);
+  --shadow-float: 0 8px 24px rgba(20, 40, 65, 0.08);
+
+  /* Layout */
+  --sidebar-w: 232px;
+  --content-max: 1220px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* 상태 배지 (Badge + Text 조합) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 23px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge--available { background: var(--soft-green); color: var(--color-success); }
+.badge--loaned    { background: var(--soft-orange); color: var(--color-warning); }
+.badge--reserved  { background: var(--soft-blue); color: var(--color-primary); }
+.badge--lost      { background: #fff1f2; color: var(--color-danger); }
+.badge--reading   { background: var(--soft-green); color: var(--color-success); }
+.badge--want      { background: var(--soft-blue); color: var(--color-primary); }
+.badge--finished  { background: var(--soft-lavender); color: #6d55ba; }

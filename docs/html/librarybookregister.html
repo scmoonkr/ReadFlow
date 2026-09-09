@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>책 검색·등록 — Global → Local → Holding</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root{
+      --ink:#10213f;
+      --muted:#6d7d90;
+      --line:#dfe7f0;
+      --blue:#1769e8;
+      --green:#15985b;
+      --amber:#d97706;
+      --red:#dc3d48;
+      --purple:#6d55ba;
+      --soft-blue:#eef6ff;
+      --soft-green:#eaf9f1;
+      --soft-amber:#fff7e3;
+      --soft-red:#fff1f2;
+      --soft-purple:#f2efff;
+      --page:#f7f9fc;
+      --shadow:0 1px 4px rgba(18,38,63,.05);
+      --sidebar:232px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:var(--page);
+      color:var(--ink);
+      font-family:"Pretendard","Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+    }
+    button,input,select,textarea{font:inherit}
+
+    .app-shell{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:var(--sidebar) minmax(0,1fr);
+    }
+
+    .sidebar{
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+      padding:18px 14px;
+      background:#fff;
+      border-right:1px solid var(--line);
+    }
+
+    .brand{
+      padding:6px 10px 20px;
+      font-size:18px;
+      font-weight:850;
+      letter-spacing:-.03em;
+      color:#193354;
+    }
+
+    .brand small{
+      display:block;
+      margin-top:3px;
+      font-size:10px;
+      color:#8a97a7;
+      font-weight:700;
+    }
+
+    .nav-group{margin-bottom:18px}
+
+    .nav-label{
+      padding:0 10px 6px;
+      font-size:9px;
+      font-weight:800;
+      color:#9aa6b5;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .nav-item{
+      min-height:40px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 10px;
+      border-radius:9px;
+      color:#637389;
+      font-size:12px;
+      font-weight:750;
+      text-decoration:none;
+      margin-bottom:3px;
+    }
+
+    .nav-item:hover{background:#f6f9fc;color:#243b58}
+    .nav-item.active{background:#edf5ff;color:var(--blue)}
+
+    .nav-item svg{
+      width:17px;height:17px;
+      stroke:currentColor;fill:none;stroke-width:1.9;
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+
+    .main{min-width:0}
+
+    .topbar{
+      height:62px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      padding:0 24px;
+      background:rgba(255,255,255,.96);
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(10px);
+    }
+
+    .global-search{
+      width:min(460px,46vw);
+      height:38px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:0 12px;
+      border:1px solid #d6e0ea;
+      border-radius:9px;
+      background:#fff;
+      color:#8b98a7;
+      font-size:11px;
+      font-weight:650;
+    }
+
+    .global-search svg,.top-icon svg{
+      width:17px;height:17px;
+      stroke:currentColor;fill:none;stroke-width:1.9;
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+
+    .top-actions{display:flex;align-items:center;gap:6px}
+
+    .top-icon{
+      width:36px;height:36px;
+      border:0;border-radius:9px;
+      background:transparent;color:#4f647c;
+      display:grid;place-items:center;
+    }
+
+    .profile{
+      display:flex;align-items:center;gap:9px;margin-left:6px
+    }
+
+    .avatar{
+      width:32px;height:32px;border-radius:50%;
+      background:#dceaff;color:#1769e8;
+      display:grid;place-items:center;
+      font-size:11px;font-weight:850;
+    }
+
+    .profile-meta strong{display:block;font-size:11px}
+    .profile-meta span{font-size:9px;color:#8996a5}
+
+    .page{
+      padding:22px 24px 36px;
+      max-width:1500px;
+      margin:0 auto;
+    }
+
+    .breadcrumb{
+      font-size:10px;
+      color:#8190a1;
+      margin-bottom:8px;
+    }
+
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:16px;
+    }
+
+    .page-title{
+      margin:0;
+      font-size:24px;
+      font-weight:850;
+      letter-spacing:-.04em;
+    }
+
+    .page-sub{
+      margin-top:5px;
+      font-size:11px;
+      color:#718095;
+    }
+
+    .flow{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-bottom:16px;
+    }
+
+    .step{
+      position:relative;
+      min-height:58px;
+      padding:10px 12px 10px 42px;
+      border:1px solid #dfe7f0;
+      border-radius:11px;
+      background:#fff;
+      box-shadow:var(--shadow);
+    }
+
+    .step-num{
+      position:absolute;
+      left:11px;top:12px;
+      width:24px;height:24px;
+      border-radius:50%;
+      display:grid;place-items:center;
+      background:#eef3f8;
+      color:#708196;
+      font-size:10px;font-weight:850;
+    }
+
+    .step.active{
+      border-color:#bdd8ff;
+      background:#f7fbff;
+    }
+
+    .step.active .step-num{
+      background:var(--blue);
+      color:#fff;
+    }
+
+    .step.done .step-num{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .step strong{
+      display:block;
+      font-size:11px;
+      margin-bottom:2px;
+      color:#304965;
+    }
+
+    .step span{
+      display:block;
+      font-size:8px;
+      color:#7f8d9e;
+      line-height:1.4;
+    }
+
+    .workspace{
+      display:grid;
+      grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);
+      gap:14px;
+      align-items:start;
+    }
+
+    .panel{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .panel-head{
+      min-height:50px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 14px;
+      border-bottom:1px solid #edf1f5;
+    }
+
+    .panel-title{
+      font-size:13px;
+      font-weight:850;
+    }
+
+    .panel-sub{
+      margin-left:7px;
+      font-size:9px;
+      color:#8896a6;
+    }
+
+    .panel-action{
+      border:0;
+      background:transparent;
+      color:var(--blue);
+      font-size:10px;
+      font-weight:800;
+    }
+
+    .search-area{
+      padding:14px;
+    }
+
+    .search-box{
+      display:grid;
+      grid-template-columns:150px minmax(0,1fr) auto;
+      gap:8px;
+    }
+
+    .input,.select{
+      height:40px;
+      border:1px solid #d3deea;
+      border-radius:8px;
+      padding:0 10px;
+      color:#29415e;
+      background:#fff;
+      outline:none;
+      font-size:11px;
+    }
+
+    .input:focus,.select:focus{
+      border-color:#8ebcff;
+      box-shadow:0 0 0 3px rgba(23,105,232,.08);
+    }
+
+    .btn{
+      min-height:38px;
+      padding:0 13px;
+      border-radius:8px;
+      border:1px solid #cfdbe7;
+      background:#fff;
+      color:#35506f;
+      font-size:11px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      border-color:var(--blue);
+      background:var(--blue);
+      color:#fff;
+    }
+
+    .btn.success{
+      border-color:var(--green);
+      background:var(--green);
+      color:#fff;
+    }
+
+    .btn svg{
+      width:15px;height:15px;
+      stroke:currentColor;fill:none;stroke-width:1.9;
+      stroke-linecap:round;stroke-linejoin:round;
+    }
+
+    .search-help{
+      margin-top:8px;
+      font-size:9px;
+      color:#7c8b9c;
+    }
+
+    .result-list{
+      border-top:1px solid #eef2f6;
+    }
+
+    .result{
+      display:grid;
+      grid-template-columns:58px 1fr auto;
+      gap:11px;
+      align-items:center;
+      padding:12px 14px;
+      border-bottom:1px solid #eef2f6;
+      cursor:pointer;
+    }
+
+    .result:last-child{border-bottom:0}
+    .result:hover{background:#fbfdff}
+    .result.selected{background:#f5f9ff}
+
+    .cover{
+      width:58px;
+      aspect-ratio:2/3;
+      border:1px solid #d7dfe8;
+      border-radius:5px;
+      box-shadow:0 2px 6px rgba(20,40,65,.09);
+      display:flex;align-items:center;justify-content:center;
+      text-align:center;
+      font-size:8px;font-weight:850;
+      padding:4px;
+    }
+
+    .cover.prince{
+      background:linear-gradient(#fff 0 67%,#f2f4f6 67%);
+      color:#4b5563;
+      font-family:serif;
+    }
+
+    .result-title{
+      font-size:12px;
+      font-weight:850;
+      color:#29415f;
+      margin-bottom:3px;
+    }
+
+    .result-meta{
+      font-size:9px;
+      color:#758496;
+      line-height:1.5;
+      margin-bottom:4px;
+    }
+
+    .result-id{
+      font-size:8px;
+      color:#94a0ae;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      min-height:24px;
+      padding:0 7px;
+      border-radius:7px;
+      font-size:8px;
+      font-weight:850;
+    }
+
+    .badge.verified{background:var(--soft-green);color:var(--green)}
+    .badge.pending{background:var(--soft-amber);color:var(--amber)}
+    .badge.local{background:var(--soft-blue);color:var(--blue)}
+    .badge.global{background:#f2f4f6;color:#6f7d8e}
+
+    .empty-create{
+      display:none;
+      padding:18px 14px;
+      text-align:center;
+      border-top:1px solid #eef2f6;
+    }
+
+    .empty-create strong{
+      display:block;
+      font-size:12px;
+      margin-bottom:4px;
+    }
+
+    .empty-create span{
+      display:block;
+      font-size:9px;
+      color:#7d8b9b;
+      margin-bottom:11px;
+    }
+
+    .selected-summary{
+      padding:14px;
+    }
+
+    .summary-book{
+      display:grid;
+      grid-template-columns:56px 1fr;
+      gap:10px;
+      align-items:start;
+      margin-bottom:12px;
+    }
+
+    .summary-book .cover{width:56px}
+
+    .summary-title{
+      font-size:13px;
+      font-weight:850;
+      margin:0 0 3px;
+    }
+
+    .summary-meta{
+      font-size:9px;
+      color:#748497;
+      line-height:1.5;
+    }
+
+    .summary-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:9px 0;
+      border-bottom:1px solid #eef2f6;
+      font-size:9px;
+    }
+
+    .summary-row:last-child{border-bottom:0}
+
+    .summary-row span{color:#78889a}
+    .summary-row strong{color:#304965}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      border-top:1px solid #eef2f6;
+    }
+
+    .field{
+      padding:11px 14px;
+      border-bottom:1px solid #eef2f6;
+    }
+
+    .field:nth-child(odd){border-right:1px solid #eef2f6}
+
+    .field-label{
+      font-size:9px;
+      font-weight:800;
+      color:#8492a2;
+      margin-bottom:5px;
+    }
+
+    .field-value{
+      font-size:11px;
+      font-weight:750;
+      color:#2f4965;
+      line-height:1.5;
+    }
+
+    .source{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      margin-top:4px;
+      font-size:8px;
+      font-weight:800;
+      color:#7b8b9d;
+    }
+
+    .source.local{color:var(--blue)}
+
+    .dot{
+      width:6px;height:6px;border-radius:50%;background:currentColor;
+    }
+
+    .local-form,.holding-form{
+      padding:14px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .form-item{
+      min-width:0;
+    }
+
+    .form-item.full{grid-column:1/-1}
+
+    .form-label{
+      font-size:9px;
+      color:#748497;
+      font-weight:800;
+      margin-bottom:5px;
+    }
+
+    .hint{
+      margin-top:4px;
+      font-size:8px;
+      line-height:1.45;
+      color:#8996a5;
+    }
+
+    .review-box{
+      padding:14px;
+      background:#fbfdff;
+      border-top:1px solid #eef2f6;
+    }
+
+    .review-flow{
+      display:grid;
+      grid-template-columns:1fr auto 1fr auto 1fr;
+      gap:8px;
+      align-items:center;
+    }
+
+    .review-node{
+      min-height:78px;
+      border:1px solid #dfe7f0;
+      border-radius:10px;
+      background:#fff;
+      padding:10px;
+    }
+
+    .review-node strong{
+      display:block;
+      font-size:10px;
+      margin-bottom:4px;
+    }
+
+    .review-node span{
+      font-size:8px;
+      color:#7d8b9b;
+      line-height:1.5;
+    }
+
+    .arrow{
+      color:#91a0b0;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .footer-actions{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      padding:12px 14px;
+      border-top:1px solid #edf1f5;
+      background:#fbfdff;
+    }
+
+    .status-box{
+      padding:12px 14px;
+      border-bottom:1px solid #eef2f6;
+    }
+
+    .status-line{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid #eef2f6;
+      font-size:9px;
+    }
+
+    .status-line:last-child{border-bottom:0}
+    .status-line span{color:#748497}
+    .status-line strong{color:#304965}
+
+    .notice{
+      margin:14px;
+      padding:10px 11px;
+      border:1px dashed #cad8e5;
+      border-radius:9px;
+      background:#fafcff;
+      color:#607389;
+      font-size:9px;
+      line-height:1.55;
+    }
+
+    .notice strong{color:#304965}
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      transform:translate(-50%,120px);
+      width:min(360px,calc(100vw - 32px));
+      opacity:0;
+      z-index:100;
+      padding:11px 13px;
+      border-radius:10px;
+      background:#132a49;
+      color:#fff;
+      font-size:10px;
+      font-weight:750;
+      box-shadow:0 8px 25px rgba(10,25,45,.22);
+      transition:.25s ease;
+    }
+
+    .toast.show{
+      transform:translate(-50%,0);
+      opacity:1;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:80;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(15,29,48,.34);
+    }
+
+    .modal-backdrop.show{display:flex}
+
+    .modal{
+      width:min(560px,100%);
+      max-height:90vh;
+      overflow:auto;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 20px 60px rgba(15,29,48,.20);
+    }
+
+    .modal-head{
+      min-height:54px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      border-bottom:1px solid #e8edf3;
+    }
+
+    .modal-title{
+      font-size:14px;
+      font-weight:850;
+    }
+
+    .modal-close{
+      width:32px;height:32px;
+      border:0;border-radius:8px;
+      background:#f3f6f9;color:#5f7185;
+      font-size:17px;
+    }
+
+    .modal-body{padding:16px}
+
+    .temp-info{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .temp-info .form-item.full{grid-column:1/-1}
+
+    .mobile-only-nav{display:none}
+
+    @media(max-width:1050px){
+      .app-shell{grid-template-columns:72px minmax(0,1fr)}
+      .brand small,.nav-label,.nav-item span{display:none}
+      .brand{font-size:0;text-align:center;padding-left:0;padding-right:0}
+      .brand::before{content:"L";font-size:18px;color:#1769e8}
+      .nav-item{justify-content:center;padding:0}
+      .workspace{grid-template-columns:1fr}
+    }
+
+    @media(max-width:760px){
+      .app-shell{display:block}
+      .sidebar{display:none}
+      .topbar{
+        height:auto;
+        min-height:58px;
+        padding:10px 14px;
+      }
+      .global-search{display:none}
+      .profile-meta{display:none}
+      .page{padding:14px 12px 90px}
+      .page-head{flex-direction:column;margin-bottom:12px}
+      .page-title{font-size:21px}
+      .flow{
+        grid-template-columns:1fr;
+        gap:6px;
+      }
+      .step{min-height:50px}
+      .search-box{
+        grid-template-columns:1fr;
+      }
+      .result{
+        grid-template-columns:52px 1fr;
+      }
+      .result .badge{grid-column:2;justify-self:start}
+      .cover{width:52px}
+      .form-grid,.local-form,.holding-form{
+        grid-template-columns:1fr;
+      }
+      .field:nth-child(odd){border-right:0}
+      .review-flow{
+        grid-template-columns:1fr;
+      }
+      .arrow{
+        transform:rotate(90deg);
+        text-align:center;
+      }
+      .footer-actions{
+        position:sticky;
+        bottom:0;
+        z-index:15;
+      }
+      .temp-info{grid-template-columns:1fr}
+      .temp-info .form-item.full{grid-column:auto}
+
+      .mobile-only-nav{
+        position:fixed;
+        left:0;right:0;bottom:0;
+        z-index:50;
+        height:64px;
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        background:#fff;
+        border-top:1px solid #e5ebf2;
+      }
+      .mobile-only-nav a{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:2px;
+        color:#6c7d91;
+        text-decoration:none;
+        font-size:8px;
+        font-weight:750;
+      }
+      .mobile-only-nav a.active{color:var(--blue)}
+      .mobile-only-nav svg{
+        width:18px;height:18px;
+        stroke:currentColor;fill:none;stroke-width:1.9;
+        stroke-linecap:round;stroke-linejoin:round;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">BookFlow Library<small>중앙도서관</small></div>
+
+      <div class="nav-group">
+        <div class="nav-label">업무</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>오늘</span>
+        </a>
+        <a class="nav-item active" href="#">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span>책</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h7"/></svg><span>소장</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M5 7v13h14V7"/></svg><span>대출·반납</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>회원</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg><span>수서</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">운영</div>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/></svg><span>통계</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9"/></svg><span>관리</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="global-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <span>제목, ISBN, 등록번호, 회원을 검색하세요</span>
+        </div>
+
+        <div class="top-actions">
+          <button class="top-icon" aria-label="알림">
+            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/></svg>
+          </button>
+          <div class="profile">
+            <div class="avatar">김</div>
+            <div class="profile-meta">
+              <strong>김사서</strong>
+              <span>자료관리팀</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="page">
+        <div class="breadcrumb">책 &gt; 책 등록</div>
+
+        <section class="page-head">
+          <div>
+            <h1 class="page-title">책 검색 · 등록</h1>
+            <div class="page-sub">공통 책 정보를 먼저 찾고, 우리 도서관 정보와 실제 소장책을 순서대로 등록합니다.</div>
+          </div>
+        </section>
+
+        <section class="flow">
+          <div class="step active" id="step1">
+            <div class="step-num">1</div>
+            <strong>Global Book 찾기</strong>
+            <span>플랫폼 공통 책 정보 검색 또는 임시 생성</span>
+          </div>
+          <div class="step" id="step2">
+            <div class="step-num">2</div>
+            <strong>우리 도서관 정보</strong>
+            <span>분류·청구기호·태그·배가위치 등록</span>
+          </div>
+          <div class="step" id="step3">
+            <div class="step-num">3</div>
+            <strong>소장책 등록</strong>
+            <span>등록번호·바코드 등 실제 Holding 생성</span>
+          </div>
+        </section>
+
+        <div class="workspace">
+          <div>
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-title">1. 공통 책 정보 검색</span>
+                  <span class="panel-sub">Global Book</span>
+                </div>
+              </div>
+
+              <div class="search-area">
+                <div class="search-box">
+                  <select class="select" id="searchType">
+                    <option value="isbn">ISBN</option>
+                    <option value="title">제목</option>
+                    <option value="author">저자</option>
+                  </select>
+                  <input class="input" id="searchInput" value="9788954651052" placeholder="ISBN 또는 제목을 입력하세요" />
+                  <button class="btn primary" onclick="searchGlobal()">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+                    검색
+                  </button>
+                </div>
+                <div class="search-help">ISBN 검색은 가장 빠른 방법입니다. 결과가 없으면 최소 정보로 임시 Global Book을 생성할 수 있습니다.</div>
+              </div>
+
+              <div class="result-list" id="resultList">
+                <article class="result selected" onclick="selectBook(this)" data-book="prince">
+                  <div class="cover prince">어린 왕자</div>
+                  <div>
+                    <div class="result-title">어린 왕자</div>
+                    <div class="result-meta">생텍쥐페리 지음 · 문학동네 · 2015.12.10<br>ISBN 9788954651052 · 136p</div>
+                    <div class="result-id">Global Book ID · G-BK-000128</div>
+                  </div>
+                  <span class="badge verified">VERIFIED</span>
+                </article>
+
+                <article class="result" onclick="selectBook(this)" data-book="prince2">
+                  <div class="cover" style="background:#dfeeff;color:#2e608d">어린 왕자<br>한글+영문판</div>
+                  <div>
+                    <div class="result-title">어린 왕자 (한글+영문판)</div>
+                    <div class="result-meta">생텍쥐페리 지음 · 더클래식 · 2020.03.20<br>ISBN 9791164453545 · 320p</div>
+                    <div class="result-id">Global Book ID · G-BK-000877</div>
+                  </div>
+                  <span class="badge verified">VERIFIED</span>
+                </article>
+              </div>
+
+              <div class="empty-create" id="emptyCreate">
+                <strong>검색 결과가 없습니다.</strong>
+                <span>업무를 멈추지 않고 최소 정보로 임시 Global Book을 등록할 수 있습니다.</span>
+                <button class="btn primary" onclick="openTempModal()">+ 임시 Global Book 만들기</button>
+              </div>
+            </section>
+
+            <section class="panel" id="localPanel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-title">2. 우리 도서관 정보</span>
+                  <span class="panel-sub">Local Book</span>
+                </div>
+                <span class="badge local">Local</span>
+              </div>
+
+              <div class="notice">
+                <strong>입력하지 않은 항목은 공통 책 정보를 사용합니다.</strong><br>
+                우리 도서관에서 따로 관리해야 하는 값만 입력하면 됩니다.
+              </div>
+
+              <div class="local-form">
+                <div class="form-item">
+                  <div class="form-label">분류</div>
+                  <input class="input" id="classification" value="863" />
+                  <div class="hint">우리 도서관 값이 있으면 Global 분류보다 우선 적용</div>
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">청구기호</div>
+                  <input class="input" id="callNumber" value="863 ㅅ-ㅇ" />
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">주제</div>
+                  <input class="input" id="subject" placeholder="비워두면 공통 주제 사용" />
+                  <div class="hint">현재 공통 주제: 성장 · 프랑스 문학 · 관계</div>
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">기본 배가위치</div>
+                  <input class="input" id="location" value="2층 문학실 · 863 서가" />
+                </div>
+
+                <div class="form-item full">
+                  <div class="form-label">로컬 태그</div>
+                  <input class="input" id="tags" value="청소년추천, 고전, 북클럽" />
+                </div>
+
+                <div class="form-item full">
+                  <div class="form-label">로컬 메모</div>
+                  <textarea class="input" id="memo" style="height:72px;padding-top:9px;resize:vertical" placeholder="필요한 경우만 입력"></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel" id="holdingPanel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-title">3. 실제 소장책 등록</span>
+                  <span class="panel-sub">Holding</span>
+                </div>
+                <span class="badge global">실물 1권 = Holding 1행</span>
+              </div>
+
+              <div class="holding-form">
+                <div class="form-item">
+                  <div class="form-label">등록번호 *</div>
+                  <input class="input" id="accession" value="A000126" />
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">바코드 *</div>
+                  <input class="input" id="barcode" value="880012345004" />
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">배가위치</div>
+                  <input class="input" id="holdingLocation" value="2층 문학실" />
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">구입가격</div>
+                  <input class="input" id="price" value="12000" />
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">입수일</div>
+                  <input class="input" id="acquiredAt" value="2026-09-09" />
+                </div>
+
+                <div class="form-item">
+                  <div class="form-label">초기 상태</div>
+                  <select class="select" id="holdingStatus">
+                    <option>AVAILABLE</option>
+                    <option>PROCESSING</option>
+                    <option>REPAIR</option>
+                  </select>
+                </div>
+
+                <div class="form-item full">
+                  <div class="form-label">대표 서지정보와 다른 실물 정보</div>
+                  <input class="input" id="editionOverride" placeholder="예: 초판 / 2012 / 256p — 다른 경우에만 입력" />
+                  <div class="hint">정상적인 경우 비워둡니다. 예외가 전체 등록 흐름을 복잡하게 만들지 않도록 합니다.</div>
+                </div>
+              </div>
+
+              <div class="review-box">
+                <div class="review-flow">
+                  <div class="review-node">
+                    <strong>Global Book</strong>
+                    <span id="reviewGlobal">어린 왕자<br>G-BK-000128</span>
+                  </div>
+                  <div class="arrow">→</div>
+                  <div class="review-node">
+                    <strong>Local Book</strong>
+                    <span>중앙도서관<br>분류 863 · 청구기호 863 ㅅ-ㅇ</span>
+                  </div>
+                  <div class="arrow">→</div>
+                  <div class="review-node">
+                    <strong>Holding</strong>
+                    <span>등록번호 A000126<br>상태 AVAILABLE</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer-actions">
+                <button class="btn" onclick="resetForm()">초기화</button>
+                <button class="btn success" onclick="registerAll()">
+                  <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>
+                  Local Book + Holding 등록
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <aside>
+            <section class="panel">
+              <div class="panel-head">
+                <span class="panel-title">선택한 공통 책</span>
+              </div>
+
+              <div class="selected-summary" id="selectedSummary">
+                <div class="summary-book">
+                  <div class="cover prince">어린 왕자</div>
+                  <div>
+                    <h3 class="summary-title">어린 왕자</h3>
+                    <div class="summary-meta">생텍쥐페리 · 문학동네<br>ISBN 9788954651052</div>
+                    <div style="margin-top:6px"><span class="badge verified">VERIFIED</span></div>
+                  </div>
+                </div>
+
+                <div class="summary-row"><span>Global Book ID</span><strong>G-BK-000128</strong></div>
+                <div class="summary-row"><span>출판일</span><strong>2015.12.10</strong></div>
+                <div class="summary-row"><span>페이지</span><strong>136p</strong></div>
+                <div class="summary-row"><span>공통 분류</span><strong>문학</strong></div>
+                <div class="summary-row"><span>공통 주제</span><strong>성장 · 프랑스 문학</strong></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <span class="panel-title">등록 상태</span>
+              </div>
+
+              <div class="status-box">
+                <div class="status-line"><span>Global Book</span><strong id="stateGlobal">선택 완료</strong></div>
+                <div class="status-line"><span>Local Book</span><strong id="stateLocal">입력 중</strong></div>
+                <div class="status-line"><span>Holding</span><strong id="stateHolding">입력 중</strong></div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <span class="panel-title">구조 검증 포인트</span>
+              </div>
+
+              <div class="notice">
+                <strong>이 화면에서 확인할 것</strong><br><br>
+                ① Global 정보는 여러 도서관이 공유<br>
+                ② Local 값은 필요한 항목만 별도 관리<br>
+                ③ Local 값이 없으면 Global 값 사용<br>
+                ④ 실제 책은 1권이라도 Holding 1행 생성<br>
+                ⑤ Holding 예외 정보는 필요한 경우에만 입력
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-only-nav">
+    <a href="#">
+      <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      오늘
+    </a>
+    <a href="#" class="active">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+      책
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+      소장
+    </a>
+    <a href="#">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M5 7v13h14V7"/></svg>
+      대출·반납
+    </a>
+  </nav>
+
+  <div class="toast" id="toast">알림</div>
+
+  <div class="modal-backdrop" id="tempModal" onclick="closeTempModal(event)">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">임시 Global Book 만들기</div>
+        <button class="modal-close" onclick="forceCloseTemp()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="notice" style="margin:0 0 14px">
+          <strong>업무를 멈추지 않는 최소 등록</strong><br>
+          필요한 최소 서지정보만 입력하고 바로 Local Book과 Holding을 생성할 수 있습니다. 이후 플랫폼 운영자가 검토·보완합니다.
+        </div>
+
+        <div class="temp-info">
+          <div class="form-item full">
+            <div class="form-label">제목 *</div>
+            <input class="input" id="tempTitle" value="새로운 책" />
+          </div>
+
+          <div class="form-item">
+            <div class="form-label">저자 *</div>
+            <input class="input" id="tempAuthor" value="홍길동" />
+          </div>
+
+          <div class="form-item">
+            <div class="form-label">ISBN</div>
+            <input class="input" id="tempIsbn" />
+          </div>
+
+          <div class="form-item">
+            <div class="form-label">출판사</div>
+            <input class="input" id="tempPublisher" />
+          </div>
+
+          <div class="form-item">
+            <div class="form-label">출판일</div>
+            <input class="input" id="tempDate" placeholder="YYYY-MM-DD" />
+          </div>
+
+          <div class="form-item">
+            <div class="form-label">가격</div>
+            <input class="input" id="tempPrice" />
+          </div>
+
+          <div class="form-item">
+            <div class="form-label">페이지</div>
+            <input class="input" id="tempPages" />
+          </div>
+        </div>
+
+        <div class="footer-actions" style="padding:14px 0 0;border-top:0">
+          <button class="btn" onclick="forceCloseTemp()">취소</button>
+          <button class="btn primary" onclick="createTempGlobal()">임시 Global 생성</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let toastTimer;
+
+    function notify(message){
+      const el=document.getElementById('toast');
+      el.textContent=message;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>el.classList.remove('show'),1800);
+    }
+
+    function searchGlobal(){
+      const q=document.getElementById('searchInput').value.trim();
+      const list=document.getElementById('resultList');
+      const empty=document.getElementById('emptyCreate');
+
+      const matched=q.includes('9788954651052') || q.includes('어린') || q==='';
+      list.style.display=matched ? 'block' : 'none';
+      empty.style.display=matched ? 'none' : 'block';
+
+      if(matched){
+        notify('Global Book 검색 결과를 불러왔습니다');
+      }else{
+        document.getElementById('stateGlobal').textContent='검색 결과 없음';
+        notify('검색 결과가 없습니다. 임시 Global을 만들 수 있습니다');
+      }
+    }
+
+    function selectBook(el){
+      document.querySelectorAll('.result').forEach(r=>r.classList.remove('selected'));
+      el.classList.add('selected');
+
+      const book=el.dataset.book;
+      const summary=document.getElementById('selectedSummary');
+      const review=document.getElementById('reviewGlobal');
+
+      if(book==='prince2'){
+        summary.innerHTML=`
+          <div class="summary-book">
+            <div class="cover" style="background:#dfeeff;color:#2e608d">어린 왕자<br>한글+영문판</div>
+            <div>
+              <h3 class="summary-title">어린 왕자 (한글+영문판)</h3>
+              <div class="summary-meta">생텍쥐페리 · 더클래식<br>ISBN 9791164453545</div>
+              <div style="margin-top:6px"><span class="badge verified">VERIFIED</span></div>
+            </div>
+          </div>
+          <div class="summary-row"><span>Global Book ID</span><strong>G-BK-000877</strong></div>
+          <div class="summary-row"><span>출판일</span><strong>2020.03.20</strong></div>
+          <div class="summary-row"><span>페이지</span><strong>320p</strong></div>
+          <div class="summary-row"><span>공통 분류</span><strong>문학</strong></div>
+          <div class="summary-row"><span>공통 주제</span><strong>성장 · 프랑스 문학</strong></div>`;
+        review.innerHTML='어린 왕자 (한글+영문판)<br>G-BK-000877';
+      }else{
+        summary.innerHTML=`
+          <div class="summary-book">
+            <div class="cover prince">어린 왕자</div>
+            <div>
+              <h3 class="summary-title">어린 왕자</h3>
+              <div class="summary-meta">생텍쥐페리 · 문학동네<br>ISBN 9788954651052</div>
+              <div style="margin-top:6px"><span class="badge verified">VERIFIED</span></div>
+            </div>
+          </div>
+          <div class="summary-row"><span>Global Book ID</span><strong>G-BK-000128</strong></div>
+          <div class="summary-row"><span>출판일</span><strong>2015.12.10</strong></div>
+          <div class="summary-row"><span>페이지</span><strong>136p</strong></div>
+          <div class="summary-row"><span>공통 분류</span><strong>문학</strong></div>
+          <div class="summary-row"><span>공통 주제</span><strong>성장 · 프랑스 문학</strong></div>`;
+        review.innerHTML='어린 왕자<br>G-BK-000128';
+      }
+
+      document.getElementById('stateGlobal').textContent='선택 완료';
+      document.getElementById('step1').classList.add('done');
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+      notify('공통 책 정보를 선택했습니다');
+    }
+
+    function openTempModal(){
+      document.getElementById('tempModal').classList.add('show');
+    }
+
+    function closeTempModal(e){
+      if(e.target.id==='tempModal') forceCloseTemp();
+    }
+
+    function forceCloseTemp(){
+      document.getElementById('tempModal').classList.remove('show');
+    }
+
+    function createTempGlobal(){
+      const title=document.getElementById('tempTitle').value.trim() || '제목 없음';
+      const author=document.getElementById('tempAuthor').value.trim() || '저자 미상';
+      const isbn=document.getElementById('tempIsbn').value.trim() || 'ISBN 없음';
+
+      document.getElementById('selectedSummary').innerHTML=`
+        <div class="summary-book">
+          <div class="cover" style="background:#fff7e3;color:#8a6520">${title}</div>
+          <div>
+            <h3 class="summary-title">${title}</h3>
+            <div class="summary-meta">${author}<br>${isbn}</div>
+            <div style="margin-top:6px"><span class="badge pending">PENDING</span></div>
+          </div>
+        </div>
+        <div class="summary-row"><span>Global Book ID</span><strong>G-TEMP-0001</strong></div>
+        <div class="summary-row"><span>상태</span><strong>PENDING</strong></div>
+        <div class="summary-row"><span>검토</span><strong>플랫폼 운영자 검토 예정</strong></div>`;
+
+      document.getElementById('reviewGlobal').innerHTML=`${title}<br>G-TEMP-0001`;
+      document.getElementById('stateGlobal').textContent='임시 Global 생성';
+      document.getElementById('step1').classList.add('done');
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+
+      forceCloseTemp();
+      notify('임시 Global Book을 생성했습니다');
+    }
+
+    function registerAll(){
+      const accession=document.getElementById('accession').value.trim();
+      const barcode=document.getElementById('barcode').value.trim();
+
+      if(!accession || !barcode){
+        notify('등록번호와 바코드는 필수입니다');
+        return;
+      }
+
+      document.getElementById('stateLocal').textContent='생성 완료';
+      document.getElementById('stateHolding').textContent='생성 완료';
+
+      document.getElementById('step2').classList.add('done');
+      document.getElementById('step2').classList.remove('active');
+
+      document.getElementById('step3').classList.add('done');
+      document.getElementById('step3').classList.remove('active');
+
+      notify('Local Book과 Holding을 등록했습니다');
+    }
+
+    function resetForm(){
+      document.getElementById('classification').value='863';
+      document.getElementById('callNumber').value='863 ㅅ-ㅇ';
+      document.getElementById('subject').value='';
+      document.getElementById('location').value='2층 문학실 · 863 서가';
+      document.getElementById('tags').value='청소년추천, 고전, 북클럽';
+      document.getElementById('memo').value='';
+      document.getElementById('accession').value='A000126';
+      document.getElementById('barcode').value='880012345004';
+      document.getElementById('holdingLocation').value='2층 문학실';
+      document.getElementById('price').value='12000';
+      document.getElementById('acquiredAt').value='2026-09-09';
+      document.getElementById('editionOverride').value='';
+      document.getElementById('stateLocal').textContent='입력 중';
+      document.getElementById('stateHolding').textContent='입력 중';
+      notify('입력값을 초기화했습니다');
+    }
+
+    document.querySelectorAll('#classification,#callNumber,#subject,#location,#tags,#memo').forEach(el=>{
+      el.addEventListener('input',()=>{
+        document.getElementById('stateLocal').textContent='입력 중';
+        document.getElementById('step2').classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('#accession,#barcode,#holdingLocation,#price,#acquiredAt,#editionOverride').forEach(el=>{
+      el.addEventListener('input',()=>{
+        document.getElementById('stateHolding').textContent='입력 중';
+        document.getElementById('step3').classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

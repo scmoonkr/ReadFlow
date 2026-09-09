@@ -1,0 +1,60 @@
+/* Reader — Mobile First. 책이 먼저 보이고 시스템은 뒤로 숨는다. */
+
+.reader-app {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding-bottom: 88px; /* bottom nav 공간 */
+}
+
+.reader-page {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 4px 0 16px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card-reader);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 12px;
+}
+
+.btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-btn);
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn--primary { background: var(--color-primary); color: #fff; }
+.btn--secondary { background: #fff; color: var(--color-primary); border-color: #cad7e5; }
+.btn--block { width: 100%; }
+
+.muted { color: var(--color-muted); }
+
+@media (min-width: 1100px) {
+  .reader-app { padding-bottom: 24px; }
+  .reader-page { max-width: 1000px; padding: 24px; }
+}
